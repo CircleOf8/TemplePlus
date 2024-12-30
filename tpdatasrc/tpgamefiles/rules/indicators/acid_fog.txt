@@ -1,0 +1,5 @@
+ID_string: ACID_FOG
+effect_type: 1
+texture_file: art\interface\player_conditions\ailments\Spell Cloud of Bewilderment.tga
+help_topic: TAG_SPELLS_ACID_FOG
+tooltip_base_text: Acid Fog

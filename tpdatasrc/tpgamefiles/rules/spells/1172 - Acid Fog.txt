@@ -1,0 +1,21 @@
+School: Conjuration
+Subschool: Creation
+Descriptor: Acid
+Level: Sor 6
+Level: Wiz 6
+Level: Water 7
+Component: V
+Component: S
+Casting Time: 1 action
+Range: Medium
+Saving Throw: None
+Spell Resistance: No
+Projectile: No
+flags_Target: Range
+inc_flags_Target: Other
+inc_flags_Target: Self
+exc_flags_Target: Dead
+exc_flags_Target: Non-critter
+mode_Target: Area
+radius_Target: 20
+ai_type: ai_action_offensive
