@@ -120,8 +120,15 @@ void TurnBasedSys::InitiativeListNextActor()
 				dispatch.DispatcherProcessor(dispatcher, dispTypeInitiative, 0, 0);
 			}	
 		}
-		actorInitiative = nextInitiativeIdx = 0;
-		InitiativeRefresh(actorInitiative, 0);
+		nextInitiativeIdx = 0;
+
+		// If initiative hasn't already counted down to 0 (or less), make
+		// that happen. Original always counted to 0 here, but that is
+		// problematic.
+		if (actorInitiative > 0) {
+			InitiativeRefresh(actorInitiative, 0);
+			actorInitiative = 0;
+		}
 	}
 	
 	objHndl actorNext = objHndl::null;

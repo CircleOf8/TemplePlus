@@ -336,6 +336,7 @@ public:
 	static int ManyShotDamage(DispatcherCallbackArgs args);
 
 	static bool StunningFistHook(objHndl objHnd, objHndl caster, int DC, int saveType, int flags);
+	static int StunnedInitiativeUpdate(DispatcherCallbackArgs args);
 
 	static int AnimalCompanionLevelHook(objHndl, Stat shouldBeClassDruid);
 	
@@ -605,6 +606,9 @@ public:
 
 		// Stunning Fist extension
 		redirectCall(0x100E84B0, StunningFistHook);
+
+		// Fix Stunned countdown
+		replaceFunction<int(DispatcherCallbackArgs)>(0x100E9500, StunnedInitiativeUpdate);
 
 		// Animal Companion Bonus Levels Extension
 		redirectCall(0x100FC18C, AnimalCompanionLevelHook);
@@ -4364,6 +4368,48 @@ bool ConditionFunctionReplacement::StunningFistHook(objHndl objHnd, objHndl cast
 	}
 
 	return result;
+}
+
+int ConditionFunctionReplacement::StunnedInitiativeUpdate(DispatcherCallbackArgs args){
+	GET_DISPIO(dispIoTypeSendSignal, DispIoD20Signal);
+
+	auto newInit = dispIo->data1;
+	auto oldInit = dispIo->data2;
+
+	// We shouldn't get initiative updates for turns with the same
+	// initiative. In case we do, exit, because the logic below acts as
+	// if an entire round has ticked in that case.
+	if (newInit == oldInit) return 0;
+
+	auto durIx = args.GetData1();
+	auto initIx = args.GetData2();
+
+	auto duration = args.GetCondArg(durIx);
+	auto tickOn = args.GetCondArg(initIx);
+
+	if (oldInit < newInit) {
+		// Initiative wrapping around from N to N+K, so don't tick
+		// if the target is in the interval [N,N+K)
+		if (newInit > tickOn && tickOn >= oldInit) {
+			return 0;
+		}
+	}
+	else {
+		// Initiative counting down from N+K to N, so don't tick unless
+		// the target is in the interval [N,N+K)
+		if (oldInit <= tickOn || tickOn < newInit) {
+			return 0;
+		}
+	}
+
+	if (duration <= 1) {
+		args.RemoveCondition();
+	}
+	else {
+		args.SetCondArg(durIx, duration-1);
+	}
+
+	return 0;
 }
 
 
